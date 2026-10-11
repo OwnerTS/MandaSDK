@@ -1,0 +1,59 @@
+name: Build plugin SDK samples
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  zig:
+    name: Zig sample
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Zig 0.15.2
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+
+      - name: Build Zig sample plugin
+        run: zig build -Doptimize=ReleaseFast
+        working-directory: examples/zig
+
+  cpp:
+    name: C++ sample
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build C++ sample plugin
+        run: g++ -shared -fPIC -O2 -I include examples/cpp/plugin.cpp -o /tmp/sample_plugin_cpp.so
+
+  rust:
+    name: Rust sample
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Rust sample plugin
+        run: cargo build --release --manifest-path examples/rust/Cargo.toml
+
+  d:
+    name: D bindings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install LDC and DUB
+        run: sudo apt-get update && sudo apt-get install -y ldc dub
+
+      - name: Build D sample plugin
+        run: dub build --build=release
+        working-directory: bindings/d
